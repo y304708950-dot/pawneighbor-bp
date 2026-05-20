@@ -1394,6 +1394,9 @@ body::after {
           <pattern id="dash" width="8" height="8" patternUnits="userSpaceOnUse">
             <line x1="0" y1="0" x2="8" y2="8" stroke="#999" stroke-width="1" opacity="0.5"/>
           </pattern>
+          <marker id="fp-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#CCC"/>
+          </marker>
         </defs>
         <!-- 背景 -->
         <rect x="10" y="10" width="580" height="400" fill="#FAFAF7" rx="6"/>
@@ -1496,12 +1499,7 @@ body::after {
         <text x="517" y="210" text-anchor="middle" font-size="7" fill="#BBB">30㎡</text>
 
         <!-- 动线箭头 -->
-        <path d="M275 280 L275 250 L350 250" fill="none" stroke="#CCC" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <defs>
-          <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#CCC"/>
-          </marker>
-        </defs>
+        <path d="M275 280 L275 250 L350 250" fill="none" stroke="#CCC" stroke-width="1.5" marker-end="url(#fp-arrow)"/>
 
         <!-- 入口标记 -->
         <polygon points="285,340 315,340 300,355" fill="var(--green)" opacity="0.5"/>
@@ -1667,7 +1665,7 @@ body::after {
   <table class="dual-table">
     <thead><tr><th>角色</th><th>人数</th><th>核心能力</th><th>来源</th></tr></thead>
     <tbody>
-      <tr><td><strong>CEO（袁野）</strong></td><td>1</td><td>战略+融资+品牌操盘 · 字节8年 · 库迪10亿年框 · 呜咔0→1</td><td>创始人</td></tr>
+      <tr><td><strong>CEO</strong></td><td>1</td><td>战略+融资+品牌操盘 · 字节8年 · 库迪10亿年框 · 呜咔0→1</td><td>创始人</td></tr>
       <tr><td>COO</td><td>1</td><td>门店运营+供应链+标准化体系</td><td>合伙人招募</td></tr>
       <tr><td>CMO/品牌负责人</td><td>1</td><td>内容营销+用户增长+社群运营</td><td>合伙人招募</td></tr>
       <tr><td>首店团队</td><td>9-11</td><td>店长1+美容师2+助理1+寄养1+前台1+内容1+合作兽医1</td><td>招聘+合作</td></tr>
@@ -1817,7 +1815,7 @@ body::after {
 <!-- Footer -->
 <footer class="footer">
   <span>爪爪邻居 PawNeighbor · 商业计划书 V4.0 · 2026年5月 · CONFIDENTIAL</span>
-  <span>袁野 · 创始人</span>
+  <span>袁野 · 联合创始人</span>
 </footer>
 
 </div><!-- /.main -->
