@@ -1,0 +1,11 @@
+{
+  "name": "pawneighbor-bp",
+  "version": "1.0.0",
+  "description": "爪爪邻居 PawNeighbor 商业计划书",
+  "scripts": {
+    "start": "npx serve -s . -l $PORT --no-clipboard"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
