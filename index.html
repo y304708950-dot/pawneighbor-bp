@@ -1943,5 +1943,51 @@ console.info = () => {};
 console.debug = () => {};
 </script>
 
+<!-- 虚拟办公室入口 -->
+<style>
+#office-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: linear-gradient(135deg, #4A90D9, #A78BFA);
+  color: #fff; border: none; border-radius: 16px;
+  padding: 14px 22px; font-size: 14px; font-weight: 600;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(74,144,217,.4);
+  transition: all .3s; font-family: inherit;
+  display: flex; align-items: center; gap: 8px;
+}
+#office-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(74,144,217,.5); }
+#office-modal {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
+}
+#office-modal iframe {
+  width: 100%; height: 100%; border: none;
+}
+#office-close {
+  position: fixed; top: 16px; right: 20px; z-index: 10001;
+  background: rgba(255,255,255,.15); border: none; color: #fff;
+  width: 40px; height: 40px; border-radius: 12px;
+  font-size: 20px; cursor: pointer; display: none;
+  transition: background .2s;
+}
+#office-close:hover { background: rgba(255,255,255,.25); }
+</style>
+<button id="office-fab" onclick="openOffice()">🏢 虚拟办公室</button>
+<button id="office-close" onclick="closeOffice()">✕</button>
+<div id="office-modal">
+  <iframe src="/virtual-office.html"></iframe>
+</div>
+<script>
+function openOffice() {
+  document.getElementById('office-modal').style.display = 'block';
+  document.getElementById('office-close').style.display = 'block';
+  document.getElementById('office-fab').style.display = 'none';
+}
+function closeOffice() {
+  document.getElementById('office-modal').style.display = 'none';
+  document.getElementById('office-close').style.display = 'none';
+  document.getElementById('office-fab').style.display = 'flex';
+}
+</script>
+
 </body>
 </html>
