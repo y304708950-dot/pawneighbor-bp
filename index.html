@@ -1973,20 +1973,217 @@ console.debug = () => {};
 </style>
 <button id="office-fab" onclick="openOffice()">🏢 虚拟办公室</button>
 <button id="office-close" onclick="closeOffice()">✕</button>
-<div id="office-modal">
-  <iframe src="/virtual-office.html"></iframe>
+<div id="office-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:#0f1117;overflow:auto;">
+<!-- ========== Virtual Office Inline ========== -->
+<style>
+.vo-bar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+.vo-bar .logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:#fff}
+.vo-bar .st{display:flex;align-items:center;gap:16px;font-size:13px;color:#888}
+.vo-bar .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;animation:pdot 2s infinite}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.4)}50%{box-shadow:0 0 0 6px rgba(74,222,128,0)}}
+.vo-main{display:flex;height:calc(100vh - 56px)}
+.vo-floor{flex:1;padding:24px;overflow-y:auto}
+.vo-floor::-webkit-scrollbar{width:6px}
+.vo-floor::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.vo-ft{font-size:14px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
+.vo-stats{display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.vo-si{display:flex;flex-direction:column;gap:2px}
+.vo-sv{font-size:24px;font-weight:700;color:#fff}
+.vo-sl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.vo-qa{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.vo-qbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);color:#e8e8e8;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.vo-qbtn:hover{background:rgba(74,144,217,.15);border-color:#4A90D9;color:#4A90D9}
+.vo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:24px}
+.vo-card{background:#1a1d27;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:20px;position:relative;transition:all .3s;cursor:pointer;overflow:hidden}
+.vo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,#4A90D9);opacity:0;transition:opacity .3s}
+.vo-card:hover{background:#22263a;transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.vo-card:hover::before{opacity:1}
+.vo-card.on{border-color:var(--ac,#4A90D9);box-shadow:0 0 20px var(--ag,rgba(74,144,217,.3))}
+.vo-card.on::before{opacity:1}
+.vo-ch{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.vo-av{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--ab,rgba(74,144,217,.15));position:relative;flex-shrink:0}
+.vo-av .ring{position:absolute;inset:-3px;border-radius:17px;border:2px solid var(--ac,#4A90D9);animation:rpulse 3s infinite}
+@keyframes rpulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+.vo-nm{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vo-rl{font-size:12px;color:#888;margin-top:2px}
+.vo-st{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+.vo-st.w{background:rgba(74,222,128,.12);color:#4ADE80}
+.vo-st.i{background:rgba(245,166,35,.12);color:#F5A623}
+.vo-st.m{background:rgba(167,139,250,.12);color:#A78BFA}
+.vo-st .sd{width:6px;height:6px;border-radius:50%;background:currentColor}
+.vo-st.w .sd{animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.vo-tk{background:rgba(255,255,255,.03);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.5;color:#e8e8e8;min-height:42px}
+.vo-tk .tl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.vo-act{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:#888}
+.adots{display:flex;gap:3px}
+.adots span{width:4px;height:4px;border-radius:50%;background:var(--ac,#4A90D9);animation:dbounce 1.4s infinite}
+.adots span:nth-child(2){animation-delay:.2s}
+.adots span:nth-child(3){animation-delay:.4s}
+@keyframes dbounce{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-6px);opacity:1}}
+.typi{display:inline-flex;gap:3px;margin-left:4px}
+.typi span{width:3px;height:12px;border-radius:2px;background:var(--ac,#4A90D9);animation:twave 1s infinite}
+.typi span:nth-child(2){animation-delay:.15s}
+.typi span:nth-child(3){animation-delay:.3s}
+@keyframes twave{0%,100%{transform:scaleY(.5);opacity:.3}50%{transform:scaleY(1);opacity:1}}
+.vo-sp{width:360px;background:#1a1d27;border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0}
+.vo-sp .ph{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;font-weight:600;color:#fff;display:flex;align-items:center;gap:8px}
+.vo-cm{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.vo-cm::-webkit-scrollbar{width:4px}
+.vo-cm::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+.cm{display:flex;gap:10px;animation:msgin .3s ease}
+@keyframes msgin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.cm .ma{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cm .mn{font-size:12px;font-weight:600;margin-bottom:4px}
+.cm .mt{font-size:13px;line-height:1.6;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:12px;border-top-left-radius:4px}
+.cm.sys .mt{background:rgba(74,144,217,.1);border-left:2px solid #4A90D9;font-size:12px;color:#888}
+.cm.usr .mt{background:rgba(74,144,217,.2);border-top-left-radius:12px;border-top-right-radius:4px}
+.vo-cia{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.vo-ciw{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.05);border-radius:12px;padding:8px 12px}
+.vo-ci{flex:1;background:none;border:none;outline:none;color:#e8e8e8;font-size:13px;font-family:inherit}
+.vo-ci::placeholder{color:#888}
+.vo-csb{background:#4A90D9;border:none;color:#fff;width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:14px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.vo-csb:hover{background:#5a9fe6;transform:scale(1.05)}
+.vo-tb{position:fixed;bottom:24px;left:24px;background:#1a1d27;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px 20px;min-width:280px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.vo-tb h3{font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.vo-ti{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+.vo-ti:last-child{border-bottom:none}
+.vo-tp{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.vo-tp.h{background:#F87171}.vo-tp.md{background:#F5A623}.vo-tp.l{background:#4ADE80}
+.vo-ti .tn{flex:1;color:#e8e8e8}
+.vo-ti .ta{font-size:11px;color:#888;background:rgba(255,255,255,.05);padding:2px 8px;border-radius:6px}
+@media(max-width:900px){.vo-sp{display:none}.vo-tb{left:12px;right:12px;min-width:auto}}
+@media(max-width:600px){.vo-grid{grid-template-columns:1fr}.vo-bar{padding:10px 16px}.vo-floor{padding:16px}}
+</style>
+<div class="vo-bar">
+  <div class="logo"><span style="font-size:24px">🐾</span><span>爪爪邻居 · 虚拟办公室</span></div>
+  <div class="st"><span>6 位 Agent 在线</span><span class="dot"></span><span id="vo-clock"></span></div>
+</div>
+<div class="vo-main">
+  <div class="vo-floor">
+    <div class="vo-ft">办公大厅 · 2楼</div>
+    <div class="vo-stats">
+      <div class="vo-si"><span class="vo-sv" id="vo-done">12</span><span class="vo-sl">今日完成</span></div>
+      <div class="vo-si"><span class="vo-sv" style="color:#4ADE80">4</span><span class="vo-sl">工作中</span></div>
+      <div class="vo-si"><span class="vo-sv" style="color:#F5A623">1</span><span class="vo-sl">会议中</span></div>
+      <div class="vo-si"><span class="vo-sv" style="color:#A78BFA">1</span><span class="vo-sl">摸鱼中</span></div>
+    </div>
+    <div class="vo-qa">
+      <button class="vo-qbtn" onclick="voAssign('market')">📊 分配市场调研</button>
+      <button class="vo-qbtn" onclick="voAssign('content')">✍️ 内容创作任务</button>
+      <button class="vo-qbtn" onclick="voAssign('supply')">📦 供应链分析</button>
+      <button class="vo-qbtn" onclick="voAssign('finance')">💰 财务模型更新</button>
+      <button class="vo-qbtn" onclick="voAssign('ops')">🎯 运营策略制定</button>
+    </div>
+    <div class="vo-grid" id="vo-grid"></div>
+  </div>
+  <div class="vo-sp">
+    <div class="ph">💬 团队频道<span style="margin-left:auto;font-size:11px;color:#888">实时</span></div>
+    <div class="vo-cm" id="vo-cm"></div>
+    <div class="vo-cia">
+      <div class="vo-ciw">
+        <input class="vo-ci" id="vo-ci" placeholder="给团队发消息..." onkeydown="if(event.key==='Enter')voSend()">
+        <button class="vo-csb" onclick="voSend()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="vo-tb"><h3>📋 当前任务看板</h3><div id="vo-tl"></div></div>
+<script>
+var VA=[
+{id:'market',nm:'小市',rl:'市场调研分析师',em:'🔍',cl:'#4A90D9',bg:'rgba(74,144,217,.15)',st:'w',tk:'分析2026年宠物保健品市场规模，对比国内外DTC品牌数据...',ac:'正在爬取行业报告数据'},
+{id:'supply',nm:'小链',rl:'供应链管理师',em:'📦',cl:'#F5A623',bg:'rgba(245,166,35,.15)',st:'w',tk:'对接中山Best Crafts徽章MOQ，整理泉州Eier水杯报价...',ac:'正在整理供应商比价表'},
+{id:'content',nm:'小创',rl:'内容创作专家',em:'✍️',cl:'#F472B6',bg:'rgba(244,114,182,.15)',st:'m',tk:'与小Y讨论小红书种草内容策略，优化宠物社区活动方案...',ac:'视频会议中'},
+{id:'finance',nm:'小账',rl:'财务分析师',em:'💰',cl:'#4ADE80',bg:'rgba(74,222,128,.15)',st:'w',tk:'更新宠物社区综合体MVP财务模型：50-100万预算分配...',ac:'正在计算投资回报率'},
+{id:'ops',nm:'小营',rl:'运营策略师',em:'🎯',cl:'#A78BFA',bg:'rgba(167,139,250,.15)',st:'i',tk:'等待任务分配...',ac:'摸鱼中 🎮'},
+{id:'design',nm:'小美',rl:'品牌设计师',em:'🎨',cl:'#22D3EE',bg:'rgba(34,211,238,.15)',st:'w',tk:'设计"爪爪邻居"品牌VI系统，制作百工集周边产品视觉稿...',ac:'正在调整配色方案'}
+];
+var VT=[{n:'宠物保健品赛道深度调研',a:'小市',p:'h'},{n:'百工集品牌周边供应商筛选',a:'小链',p:'h'},{n:'小红书B端MVP内容矩阵',a:'小创',p:'md'},{n:'MVP财务模型迭代v2.1',a:'小账',p:'md'},{n:'天津/杭州选址对比分析',a:'小营',p:'l'}];
+var VC=[
+{t:'s',x:'📌 小市 分配了新任务：宠物保健品市场规模调研'},
+{a:'market',x:'收到！正在整理2024-2026年宠物保健品市场数据，预计15分钟出初步报告。'},
+{a:'supply',x:'刚收到泉州Eier的报价，水杯MOQ50个，单价¥18-25，比预期低了12%。'},
+{a:'finance',x:'财务模型更新完成，核心数据：首年投入50-80万，预计18个月回本。'},
+{a:'content',x:'小红书宠物社区账号矩阵规划好了，5个垂类账号 + 1个主品牌号，要不要看一下？'},
+{t:'s',x:'🎮 小营 正在玩王者荣耀（已连续3局）'},
+{a:'design',x:'品牌色板定了：主色 #4A90D9（信任蓝），辅色 #F5A623（温暖金），强调色 #4ADE80（活力绿）。'}
+];
+function voRender(){
+var g=document.getElementById('vo-grid');
+g.innerHTML=VA.map(function(a){
+var sk=a.st==='w'?'w':a.st==='i'?'i':'m';
+var sl=a.st==='w'?'工作中':a.st==='i'?'摸鱼中':'会议中';
+var act='';
+if(a.st==='w') act='<div class="adots"><span></span><span></span><span></span></div>'+a.ac+'<div class="typi"><span></span><span></span><span></span></div>';
+else if(a.st==='m') act='📹 '+a.ac;
+else act='🎮 '+a.ac;
+return '<div class="vo-card '+(a.st==='w'?'on':'')+'" data-st="'+a.st+'" style="--ac:'+a.cl+';--ab:'+a.bg+';--ag:'+a.cl+'33" onclick="voSel(\''+a.id+'\')"><div class="vo-ch"><div class="vo-av" style="background:'+a.bg+'"><div class="ring" style="border-color:'+a.cl+'"></div>'+a.em+'</div><div style="flex:1;min-width:0"><div class="vo-nm">'+a.nm+'</div><div class="vo-rl">'+a.rl+'</div></div><span class="vo-st '+sk+'"><span class="sd"></span>'+sl+'</span></div><div class="vo-tk"><div class="tl">当前任务</div>'+a.tk+'</div><div class="vo-act">'+act+'</div></div>';
+}).join('');
+}
+function voRenderT(){
+document.getElementById('vo-tl').innerHTML=VT.map(function(t){
+return '<div class="vo-ti"><span class="vo-tp '+t.p+'"></span><span class="tn">'+t.n+'</span><span class="ta">'+t.a+'</span></div>';
+}).join('');
+}
+function voRenderC(){
+var c=document.getElementById('vo-cm');
+c.innerHTML=VC.map(function(m){
+if(m.t==='s') return '<div class="cm sys"><div class="mt">'+m.x+'</div></div>';
+if(m.t==='u') return '<div class="cm usr"><div class="mt">'+m.x+'</div></div>';
+var a=VA.find(function(v){return v.id===m.a});
+return '<div class="cm"><div class="ma" style="background:'+a.bg+'">'+a.em+'</div><div><div class="mn" style="color:'+a.cl+'">'+a.nm+'</div><div class="mt">'+m.x+'</div></div></div>';
+}).join('');
+c.scrollTop=c.scrollHeight;
+}
+function voSel(id){
+document.querySelectorAll('.vo-card').forEach(function(c){c.classList.remove('on')});
+var card=document.querySelector('[onclick="voSel(\''+id+'\')"]');
+if(card)card.classList.add('on');
+var a=VA.find(function(v){return v.id===id});
+if(a){VC.push({a:id,x:a.nm+'在此！有什么需要我帮忙的吗？'});voRenderC();}
+}
+function voAssign(type){
+var m={market:{a:'market',x:'好的，我来分析宠物保健品赛道最新数据！重点关注DTC品牌和内容营销策略。'},content:{a:'content',x:'收到！我马上开始创作小红书宠物社区内容矩阵方案。'},supply:{a:'supply',x:'明白！我来梳理供应链上下游数据，找出最优供应商组合。'},finance:{a:'finance',x:'了解！开始更新财务模型，加入最新成本数据。'},ops:{a:'ops',x:'来了来了，放下游戏来干活了！🎯'}};
+var t=m[type];if(!t)return;
+var ag=VA.find(function(v){return v.id===type});
+if(ag){ag.st='w';ag.ac='正在处理新任务...';}
+voRender();
+VC.push({t:'s',x:'📌 新任务已分配给 '+ag.nm});
+setTimeout(function(){VC.push(t);voRenderC();},800);
+}
+function voSend(){
+var inp=document.getElementById('vo-ci');
+var tx=inp.value.trim();if(!tx)return;
+VC.push({t:'u',x:tx});inp.value='';voRenderC();
+setTimeout(function(){
+var r=VA[Math.floor(Math.random()*4)];
+var rs=['收到！我马上处理这个任务。','好的，我来看看这个情况。','明白，正在分析中，请稍等~','了解！我会尽快给你反馈。'];
+VC.push({a:r.id,x:rs[Math.floor(Math.random()*rs.length)]});voRenderC();
+},1000+Math.random()*2000);
+}
+function voClock(){
+var n=new Date();
+var el=document.getElementById('vo-clock');
+if(el) el.textContent=n.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+voRender();voRenderT();voRenderC();
+setInterval(voClock,1000);voClock();
+setInterval(function(){
+var idle=VA.filter(function(a){return a.st==='i'});
+var work=VA.filter(function(a){return a.st==='w'});
+if(Math.random()>.5&&idle.length>0){
+var a=idle[Math.floor(Math.random()*idle.length)];a.st='w';a.ac='开始处理任务...';
+VC.push({t:'s',x:'✨ '+a.nm+' 结束摸鱼，开始工作了！'});voRender();voRenderC();
+}else if(Math.random()>.7&&work.length>1){
+var a=work[Math.floor(Math.random()*work.length)];a.st='i';a.ac='摸鱼中 🎮';
+VC.push({t:'s',x:'🎮 '+a.nm+' 偷偷打开了王者荣耀...'});voRender();voRenderC();
+}
+},20000);
+</script>
 </div>
 <script>
-function openOffice() {
-  document.getElementById('office-modal').style.display = 'block';
-  document.getElementById('office-close').style.display = 'block';
-  document.getElementById('office-fab').style.display = 'none';
-}
-function closeOffice() {
-  document.getElementById('office-modal').style.display = 'none';
-  document.getElementById('office-close').style.display = 'none';
-  document.getElementById('office-fab').style.display = 'flex';
-}
+function openOffice(){document.getElementById('office-modal').style.display='block';document.getElementById('office-close').style.display='block';document.getElementById('office-fab').style.display='none';}
+function closeOffice(){document.getElementById('office-modal').style.display='none';document.getElementById('office-close').style.display='none';document.getElementById('office-fab').style.display='flex';}
 </script>
 
 </body>
