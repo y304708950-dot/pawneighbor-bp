@@ -439,6 +439,51 @@ body::after {
 .tree .hl { color: var(--blue); font-weight: 700; }
 .tree .dim { color: var(--gray-500); }
 
+/* ========== Store Renderings ========== */
+.store-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.store-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.store-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.store-card .caption {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-card .caption .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.store-card .caption .dot.blue { background: var(--blue); }
+.store-card .caption .dot.gold { background: var(--gold); }
+
+@media (max-width: 768px) {
+  .store-gallery { grid-template-columns: 1fr; }
+}
+
 /* ========== KPI mini cards ========== */
 .kpi-row {
   display: grid;
@@ -1175,6 +1220,17 @@ body::after {
     ├── 抖音内容切片+信息流投放（ROI目标1:2.5+）
     ├── 小红书种草+UGC
     └── 企微私域社群（目标年LTV 800元/客）</div>
+
+  <div class="store-gallery">
+    <div class="store-card">
+      <img src="exterior.png" alt="爪爪邻居门店外观效果图" loading="lazy">
+      <div class="caption"><span class="dot blue"></span> 门店外观 — 社区临街店铺，温暖天蓝+暖金门头，宠物友好入口</div>
+    </div>
+    <div class="store-card">
+      <img src="interior.png" alt="爪爪邻居店内效果图" loading="lazy">
+      <div class="caption"><span class="dot gold"></span> 店内空间 — 美容区+零售体验区+宠物活动区，通透开放布局</div>
+    </div>
+  </div>
 </section>
 
 <!-- ====== 五、商业模式 ====== -->
