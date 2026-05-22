@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>爪爪邻居 · 虚拟办公室</title>
+<style>
+/* ========== CSS Variables ========== */
+:root {
+  --bg-dark: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-card-hover: #22263a;
+  --blue: #4A90D9;
+  --blue-glow: rgba(74,144,217,.3);
+  --gold: #F5A623;
+  --green: #4ADE80;
+  --red: #F87171;
+  --purple: #A78BFA;
+  --pink: #F472B6;
+  --cyan: #22D3EE;
+  --text: #e8e8e8;
+  --text-dim: #888;
+  --text-bright: #fff;
+  --border: rgba(255,255,255,.06);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========== Top Bar ========== */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15,17,23,.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.top-bar .logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 18px; font-weight: 700; color: var(--text-bright);
+}
+.top-bar .logo span.icon { font-size: 24px; }
+.top-bar .status {
+  display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-dim);
+}
+.top-bar .status .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,.4); }
+  50% { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+}
+
+/* ========== Main Layout ========== */
+.main {
+  display: flex;
+  margin-top: 56px;
+  height: calc(100vh - 56px);
+}
+
+/* ========== Office Floor ========== */
+.office-floor {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  position: relative;
+}
+.office-floor::-webkit-scrollbar { width: 6px; }
+.office-floor::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+
+.floor-title {
+  font-size: 14px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+/* ========== Grid of Workstations ========== */
+.workstations {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding-bottom: 24px;
+}
+
+/* ========== Agent Card ========== */
+.agent-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  transition: all .3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.agent-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--agent-color, var(--blue));
+  opacity: 0;
+  transition: opacity .3s;
+}
+.agent-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+.agent-card:hover::before { opacity: 1; }
+.agent-card.active {
+  border-color: var(--agent-color, var(--blue));
+  box-shadow: 0 0 20px var(--agent-glow, var(--blue-glow));
+}
+.agent-card.active::before { opacity: 1; }
+
+/* Agent Header */
+.agent-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px;
+}
+.agent-avatar {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  background: var(--agent-bg, rgba(74,144,217,.15));
+  position: relative;
+  flex-shrink: 0;
+}
+.agent-avatar .status-ring {
+  position: absolute; inset: -3px;
+  border-radius: 17px;
+  border: 2px solid var(--agent-color, var(--blue));
+  animation: ring-pulse 3s infinite;
+}
+@keyframes ring-pulse {
+  0%,100% { opacity: .3; transform: scale(1); }
+  50% { opacity: .7; transform: scale(1.05); }
+}
+
+.agent-info { flex: 1; min-width: 0; }
+.agent-name {
+  font-size: 15px; font-weight: 600; color: var(--text-bright);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.agent-role {
+  font-size: 12px; color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Status Badge */
+.agent-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.agent-status.working {
+  background: rgba(74,222,128,.12); color: var(--green);
+}
+.agent-status.idle {
+  background: rgba(245,166,35,.12); color: var(--gold);
+}
+.agent-status.meeting {
+  background: rgba(167,139,250,.12); color: var(--purple);
+}
+.agent-status.offline {
+  background: rgba(136,136,136,.12); color: var(--text-dim);
+}
+.agent-status .status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+.agent-status.working .status-dot { animation: blink 1.5s infinite; }
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+
+/* Task Area */
+.agent-task {
+  background: rgba(255,255,255,.03);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  min-height: 42px;
+}
+.agent-task .task-label {
+  font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+/* Activity Animation */
+.agent-activity {
+  margin-top: 12px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-dim);
+}
+.activity-dots {
+  display: flex; gap: 3px;
+}
+.activity-dots span {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--agent-color, var(--blue));
+  animation: dot-bounce 1.4s infinite;
+}
+.activity-dots span:nth-child(2) { animation-delay: .2s; }
+.activity-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dot-bounce {
+  0%,80%,100% { transform: translateY(0); opacity: .3; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ========== Side Panel (Chat) ========== */
+.side-panel {
+  width: 360px;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+.side-panel .panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px; font-weight: 600; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+.chat-msg {
+  display: flex; gap: 10px;
+  animation: msg-in .3s ease;
+}
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chat-msg .msg-avatar {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.chat-msg .msg-body {
+  flex: 1; min-width: 0;
+}
+.chat-msg .msg-name {
+  font-size: 12px; font-weight: 600; margin-bottom: 4px;
+}
+.chat-msg .msg-text {
+  font-size: 13px; line-height: 1.6;
+  background: rgba(255,255,255,.05);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+}
+.chat-msg.system .msg-text {
+  background: rgba(74,144,217,.1);
+  border-left: 2px solid var(--blue);
+  font-size: 12px; color: var(--text-dim);
+}
+.chat-msg.user .msg-text {
+  background: rgba(74,144,217,.2);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 4px;
+}
+
+/* Chat Input */
+.chat-input-area {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.chat-input-wrap {
+  display: flex; gap: 8px; align-items: center;
+  background: rgba(255,255,255,.05);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+.chat-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: 13px;
+  font-family: inherit;
+}
+.chat-input::placeholder { color: var(--text-dim); }
+.chat-send {
+  background: var(--blue); border: none; color: #fff;
+  width: 32px; height: 32px; border-radius: 10px;
+  cursor: pointer; font-size: 14px;
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.chat-send:hover { background: #5a9fe6; transform: scale(1.05); }
+
+/* ========== Task Board (floating) ========== */
+.task-board {
+  position: fixed; bottom: 24px; left: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 280px;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.task-board h3 {
+  font-size: 13px; font-weight: 600; color: var(--text-bright);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.task-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-priority {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.task-priority.high { background: var(--red); }
+.task-priority.medium { background: var(--gold); }
+.task-priority.low { background: var(--green); }
+.task-item .task-name { flex: 1; color: var(--text); }
+.task-item .task-assignee {
+  font-size: 11px; color: var(--text-dim);
+  background: rgba(255,255,255,.05);
+  padding: 2px 8px; border-radius: 6px;
+}
+
+/* ========== Quick Actions ========== */
+.quick-actions {
+  display: flex; gap: 8px; margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.quick-btn {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.quick-btn:hover {
+  background: rgba(74,144,217,.15);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 900px) {
+  .side-panel { display: none; }
+  .task-board { left: 12px; right: 12px; min-width: auto; }
+}
+@media (max-width: 600px) {
+  .workstations { grid-template-columns: 1fr; }
+  .top-bar { padding: 10px 16px; }
+  .office-floor { padding: 16px; }
+}
+
+/* ========== Fun: Idle Animations ========== */
+.agent-card[data-status="idle"] .agent-avatar {
+  animation: idle-bounce 3s ease-in-out infinite;
+}
+@keyframes idle-bounce {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-3deg); }
+  75% { transform: translateY(-2px) rotate(3deg); }
+}
+
+/* Typing animation for working agents */
+.typing-indicator {
+  display: inline-flex; gap: 3px; margin-left: 4px;
+}
+.typing-indicator span {
+  width: 3px; height: 12px; border-radius: 2px;
+  background: var(--agent-color, var(--blue));
+  animation: typing-wave 1s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: .15s; }
+.typing-indicator span:nth-child(3) { animation-delay: .3s; }
+@keyframes typing-wave {
+  0%,100% { transform: scaleY(0.5); opacity: .3; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ========== Stats Bar ========== */
+.stats-bar {
+  display: flex; gap: 24px; margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.stat-item {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-value {
+  font-size: 24px; font-weight: 700; color: var(--text-bright);
+}
+.stat-label {
+  font-size: 11px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="logo">
+    <span class="icon">🐾</span>
+    <span>爪爪邻居 · 虚拟办公室</span>
+  </div>
+  <div class="status">
+    <span>6 位 Agent 在线</span>
+    <span class="dot"></span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="main">
+  <!-- Office Floor -->
+  <div class="office-floor">
+    <div class="floor-title">办公大厅 · 2楼</div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="tasks-done">12</span>
+        <span class="stat-label">今日完成</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" style="color:var(--green)">4</span>
+        <span class="stat-label">工作中</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" style="color:var(--gold)">1</span>
+        <span class="stat-label">会议中</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" style="color:var(--purple)">1</span>
+        <span class="stat-label">摸鱼中</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="assignTask('market')">📊 分配市场调研</button>
+      <button class="quick-btn" onclick="assignTask('content')">✍️ 内容创作任务</button>
+      <button class="quick-btn" onclick="assignTask('supply')">📦 供应链分析</button>
+      <button class="quick-btn" onclick="assignTask('finance')">💰 财务模型更新</button>
+      <button class="quick-btn" onclick="assignTask('ops')">🎯 运营策略制定</button>
+    </div>
+
+    <!-- Workstations Grid -->
+    <div class="workstations" id="workstations"></div>
+  </div>
+
+  <!-- Side Chat Panel -->
+  <div class="side-panel">
+    <div class="panel-header">
+      💬 团队频道
+      <span style="margin-left:auto;font-size:11px;color:var(--text-dim)">实时</span>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <input class="chat-input" id="chat-input" placeholder="给团队发消息..." onkeydown="if(event.key==='Enter')sendUserMsg()">
+        <button class="chat-send" onclick="sendUserMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Board -->
+<div class="task-board">
+  <h3>📋 当前任务看板</h3>
+  <div id="task-list"></div>
+</div>
+
+<script>
+// ========== Agent Data ==========
+const agents = [
+  {
+    id: 'market',
+    name: '小市',
+    role: '市场调研分析师',
+    emoji: '🔍',
+    color: '#4A90D9',
+    bg: 'rgba(74,144,217,.15)',
+    status: 'working',
+    task: '分析2026年宠物保健品市场规模，对比国内外DTC品牌数据...',
+    activity: '正在爬取行业报告数据'
+  },
+  {
+    id: 'supply',
+    name: '小链',
+    role: '供应链管理师',
+    emoji: '📦',
+    color: '#F5A623',
+    bg: 'rgba(245,166,35,.15)',
+    status: 'working',
+    task: '对接中山Best Crafts徽章MOQ，整理泉州Eier水杯报价...',
+    activity: '正在整理供应商比价表'
+  },
+  {
+    id: 'content',
+    name: '小创',
+    role: '内容创作专家',
+    emoji: '✍️',
+    color: '#F472B6',
+    bg: 'rgba(244,114,182,.15)',
+    status: 'meeting',
+    task: '与小Y讨论小红书种草内容策略，优化宠物社区活动方案...',
+    activity: '视频会议中'
+  },
+  {
+    id: 'finance',
+    name: '小账',
+    role: '财务分析师',
+    emoji: '💰',
+    color: '#4ADE80',
+    bg: 'rgba(74,222,128,.15)',
+    status: 'working',
+    task: '更新宠物社区综合体MVP财务模型：50-100万预算分配...',
+    activity: '正在计算投资回报率'
+  },
+  {
+    id: 'ops',
+    name: '小营',
+    role: '运营策略师',
+    emoji: '🎯',
+    color: '#A78BFA',
+    bg: 'rgba(167,139,250,.15)',
+    status: 'idle',
+    task: '等待任务分配...',
+    activity: '摸鱼中 🎮'
+  },
+  {
+    id: 'design',
+    name: '小美',
+    role: '品牌设计师',
+    emoji: '🎨',
+    color: '#22D3EE',
+    bg: 'rgba(34,211,238,.15)',
+    status: 'working',
+    task: '设计"爪爪邻居"品牌VI系统，制作百工集周边产品视觉稿...',
+    activity: '正在调整配色方案'
+  }
+];
+
+// ========== Tasks ==========
+const tasks = [
+  { name: '宠物保健品赛道深度调研', assignee: '小市', priority: 'high' },
+  { name: '百工集品牌周边供应商筛选', assignee: '小链', priority: 'high' },
+  { name: '小红书B端MVP内容矩阵', assignee: '小创', priority: 'medium' },
+  { name: 'MVP财务模型迭代v2.1', assignee: '小账', priority: 'medium' },
+  { name: '天津/杭州选址对比分析', assignee: '小营', priority: 'low' },
+];
+
+// ========== Chat Messages ==========
+const chatHistory = [
+  { type: 'system', text: '📌 小市 分配了新任务：宠物保健品市场规模调研' },
+  { agent: 'market', text: '收到！正在整理2024-2026年宠物保健品市场数据，预计15分钟出初步报告。' },
+  { agent: 'supply', text: '刚收到泉州Eier的报价，水杯MOQ50个，单价¥18-25，比预期低了12%。' },
+  { agent: 'finance', text: '财务模型更新完成，核心数据：首年投入50-80万，预计18个月回本。' },
+  { agent: 'content', text: '小红书宠物社区账号矩阵规划好了，5个垂类账号 + 1个主品牌号，要不要看一下？' },
+  { type: 'system', text: '🎮 小营 正在玩王者荣耀（已连续3局）' },
+  { agent: 'design', text: '品牌色板定了：主色 #4A90D9（信任蓝），辅色 #F5A623（温暖金），强调色 #4ADE80（活力绿）。' },
+];
+
+// ========== Render Functions ==========
+function renderAgents() {
+  const container = document.getElementById('workstations');
+  container.innerHTML = agents.map(a => `
+    <div class="agent-card ${a.status === 'working' ? 'active' : ''}" 
+         data-status="${a.status}"
+         style="--agent-color:${a.color};--agent-bg:${a.bg};--agent-glow:${a.color}33"
+         onclick="selectAgent('${a.id}')">
+      <div class="agent-header">
+        <div class="agent-avatar" style="background:${a.bg}">
+          <div class="status-ring" style="border-color:${a.color}"></div>
+          ${a.emoji}
+        </div>
+        <div class="agent-info">
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-role">${a.role}</div>
+        </div>
+        <span class="agent-status ${a.status}">
+          <span class="status-dot"></span>
+          ${a.status === 'working' ? '工作中' : a.status === 'idle' ? '摸鱼中' : a.status === 'meeting' ? '会议中' : '离线'}
+        </span>
+      </div>
+      <div class="agent-task">
+        <div class="task-label">当前任务</div>
+        ${a.task}
+      </div>
+      <div class="agent-activity">
+        ${a.status === 'working' ? `
+          <div class="activity-dots"><span></span><span></span><span></span></div>
+          ${a.activity}
+          <div class="typing-indicator"><span></span><span></span><span></span></div>
+        ` : a.status === 'meeting' ? `
+          📹 ${a.activity}
+        ` : `
+          🎮 ${a.activity}
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTasks() {
+  const container = document.getElementById('task-list');
+  container.innerHTML = tasks.map(t => `
+    <div class="task-item">
+      <span class="task-priority ${t.priority}"></span>
+      <span class="task-name">${t.name}</span>
+      <span class="task-assignee">${t.assignee}</span>
+    </div>
+  `).join('');
+}
+
+function renderChat() {
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = chatHistory.map(msg => {
+    if (msg.type === 'system') {
+      return `<div class="chat-msg system"><div class="msg-body"><div class="msg-text">${msg.text}</div></div></div>`;
+    }
+    if (msg.type === 'user') {
+      return `<div class="chat-msg user"><div class="msg-body"><div class="msg-text">${msg.text}</div></div></div>`;
+    }
+    const agent = agents.find(a => a.id === msg.agent);
+    return `
+      <div class="chat-msg">
+        <div class="msg-avatar" style="background:${agent.bg}">${agent.emoji}</div>
+        <div class="msg-body">
+          <div class="msg-name" style="color:${agent.color}">${agent.name}</div>
+          <div class="msg-text">${msg.text}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+// ========== Interactions ==========
+function selectAgent(id) {
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active'));
+  const card = document.querySelector(`[onclick="selectAgent('${id}')"]`);
+  if (card) card.classList.add('active');
+  
+  const agent = agents.find(a => a.id === id);
+  if (agent) {
+    addChatMessage({ agent: id, text: `${agent.name}在此！有什么需要我帮忙的吗？` });
+  }
+}
+
+function assignTask(type) {
+  const taskMap = {
+    market: { agent: 'market', text: '好的，我来分析宠物保健品赛道最新数据！重点关注DTC品牌和内容营销策略。' },
+    content: { agent: 'content', text: '收到！我马上开始创作小红书宠物社区内容矩阵方案。' },
+    supply: { agent: 'supply', text: '明白！我来梳理供应链上下游数据，找出最优供应商组合。' },
+    finance: { agent: 'finance', text: '了解！开始更新财务模型，加入最新成本数据。' },
+    ops: { agent: 'ops', text: '来了来了，放下游戏来干活了！🎯' },
+  };
+  
+  const task = taskMap[type];
+  if (task) {
+    // Update agent status
+    const agent = agents.find(a => a.id === type);
+    if (agent) {
+      agent.status = 'working';
+      agent.activity = '正在处理新任务...';
+    }
+    renderAgents();
+    addChatMessage({ type: 'system', text: `📌 新任务已分配给 ${agent.name}` });
+    setTimeout(() => addChatMessage(task), 800);
+  }
+}
+
+function addChatMessage(msg) {
+  chatHistory.push(msg);
+  renderChat();
+}
+
+function sendUserMsg() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  addChatMessage({ type: 'user', text });
+  input.value = '';
+  
+  // Simulate response
+  setTimeout(() => {
+    const responder = agents[Math.floor(Math.random() * 4)]; // Random working agent
+    const responses = [
+      `收到！我马上处理这个任务。`,
+      `好的，我来看看这个情况。`,
+      `明白，正在分析中，请稍等~`,
+      `了解！我会尽快给你反馈。`,
+    ];
+    addChatMessage({
+      agent: responder.id,
+      text: responses[Math.floor(Math.random() * responses.length)]
+    });
+  }, 1000 + Math.random() * 2000);
+}
+
+// ========== Clock ==========
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = 
+    now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ========== Task Counter Animation ==========
+function animateCounter() {
+  const el = document.getElementById('tasks-done');
+  let count = 12;
+  setInterval(() => {
+    if (Math.random() > 0.7) {
+      count++;
+      el.textContent = count;
+      el.style.transform = 'scale(1.2)';
+      setTimeout(() => el.style.transform = 'scale(1)', 200);
+    }
+  }, 15000);
+}
+
+// ========== Random Status Changes ==========
+function randomStatusChange() {
+  setInterval(() => {
+    const idleAgents = agents.filter(a => a.status === 'idle');
+    const workingAgents = agents.filter(a => a.status === 'working');
+    
+    if (Math.random() > 0.5 && idleAgents.length > 0) {
+      const agent = idleAgents[Math.floor(Math.random() * idleAgents.length)];
+      agent.status = 'working';
+      agent.activity = '开始处理任务...';
+      addChatMessage({ type: 'system', text: `✨ ${agent.name} 结束摸鱼，开始工作了！` });
+      renderAgents();
+    } else if (Math.random() > 0.7 && workingAgents.length > 1) {
+      const agent = workingAgents[Math.floor(Math.random() * workingAgents.length)];
+      agent.status = 'idle';
+      agent.activity = '摸鱼中 🎮';
+      addChatMessage({ type: 'system', text: `🎮 ${agent.name} 偷偷打开了王者荣耀...` });
+      renderAgents();
+    }
+  }, 20000);
+}
+
+// ========== Init ==========
+renderAgents();
+renderTasks();
+renderChat();
+animateCounter();
+randomStatusChange();
+</script>
+</body>
+</html>
